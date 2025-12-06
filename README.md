@@ -1,2 +1,1 @@
-# 64Box
-the better 86box
+idk proper readme later you suck
