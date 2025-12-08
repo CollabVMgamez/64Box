@@ -8,7 +8,7 @@
 #include "timer.h"
 #include "keyboard.h"
 #include "video.h"
-
+ 
 // CPU types
 typedef enum {
     CPU_8086,
@@ -16,7 +16,10 @@ typedef enum {
     CPU_386,
     CPU_486
 } cpu_type_t;
-
+ 
+/* Per-CPU step function type so we can plug different CPU cores (8086/8088/386/486). */
+typedef void (*cpu_step_fn_t)(cpu_state_t* cpu, memory_t* mem);
+ 
 // Emulator state
 typedef struct {
     cpu_type_t cpu_type;
@@ -27,6 +30,7 @@ typedef struct {
     timer_state_t timer;
     keyboard_state_t keyboard;
     video_state_t video;
+    cpu_step_fn_t cpu_step; /* Selected per CPU type in emulator_init */
 } emulator_state_t;
 
 // Core emulator functions
