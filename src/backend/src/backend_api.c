@@ -16,18 +16,18 @@ static s64box_instance_t* s64box_from_handle(s64box_handle_t handle)
 
 /* Lifecycle */
 
-s64box_handle_t s64box_create(cpu_type_t cpu_type)
+s64box_handle_t s64box_create(cpu_type_t cpu_type, uint32_t ram_size)
 {
     s64box_instance_t* inst = (s64box_instance_t*)malloc(sizeof(s64box_instance_t));
     if (!inst) {
         return NULL;
     }
-
-    if (!emulator_init(&inst->state, cpu_type)) {
+ 
+    if (!emulator_init(&inst->state, cpu_type, ram_size)) {
         free(inst);
         return NULL;
     }
-
+ 
     return (s64box_handle_t)inst;
 }
 

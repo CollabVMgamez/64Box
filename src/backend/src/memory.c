@@ -2,14 +2,25 @@
 #include <string.h>
 
 /**
- * Initialize RAM to zero.
+ * Initialize RAM to zero and configure effective RAM size.
+ *
+ * requested_size is clamped to [64KB, MEMORY_SIZE].
  */
-void memory_init(memory_t* mem)
+void memory_init(memory_t* mem, uint32_t requested_size)
 {
     if (!mem) {
         return;
     }
 
+    uint32_t min_size = 0x10000u; /* 64KB minimum */
+    if (requested_size < min_size) {
+        requested_size = min_size;
+    }
+    if (requested_size > MEMORY_SIZE) {
+        requested_size = MEMORY_SIZE;
+    }
+
+    mem->size = requested_size;
     memset(mem->ram, 0, sizeof(mem->ram));
 }
 
@@ -23,7 +34,7 @@ uint8_t memory_read_byte(memory_t* mem, uint32_t address)
         return 0xFF;
     }
 
-    if (address >= MEMORY_SIZE) {
+    if (address >= mem->size) {
         /* TODO: handle MMIO / out-of-range differently later */
         return 0xFF;
     }
@@ -41,7 +52,7 @@ void memory_write_byte(memory_t* mem, uint32_t address, uint8_t value)
         return;
     }
 
-    if (address >= MEMORY_SIZE) {
+    if (address >= mem->size) {
         /* TODO: handle MMIO / out-of-range differently later */
         return;
     }
@@ -75,6 +86,6 @@ void memory_write_word(memory_t* mem, uint32_t address, uint16_t value)
         return;
     }
 
-    memory_write_byte(mem, address, (uint8_t)(value & 0xFF));
+    memory_write_byte(mem, address,     (uint8_t)(value & 0xFF));
     memory_write_byte(mem, address + 1, (uint8_t)((value >> 8) & 0xFF));
 }

@@ -18,6 +18,13 @@ add_library(64box_backend SHARED
     src/memory.c
     src/timer.c
     src/backend_api.c
+    src/video.c
+    # Per-CPU cores
+    src/cpu/cpu_8086.c
+    src/cpu/cpu_8088.c
+    src/cpu/cpu_80186.c
+    src/cpu/cpu_386.c
+    src/cpu/cpu_486.c
 )
  
 # Add more source files as they are created

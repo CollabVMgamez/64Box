@@ -6,7 +6,7 @@
 
 /**
  * Basic 16-bit x86 CPU state for 8086/8088-style processors.
- * 
+ *
  * v0.1 goal: real-mode only, minimal instruction set.
  */
 typedef struct {
@@ -48,10 +48,17 @@ void cpu_reset(cpu_state_t* cpu);
 
 /**
  * Execute a single instruction at the current CS:IP.
- * 
- * For now, this fetches the opcode from memory via the provided
- * memory object and updates the CPU state accordingly.
+ *
+ * This is the generic 8086-style decoder used as a core implementation
+ * that per-CPU step functions can delegate to.
  */
 void cpu_step(cpu_state_t* cpu, memory_t* mem);
+
+/* Per-CPU step entry points (to be bound via emulator_state_t.cpu_step). */
+void cpu_8086_step(cpu_state_t* cpu, memory_t* mem);
+void cpu_8088_step(cpu_state_t* cpu, memory_t* mem);
+void cpu_80186_step(cpu_state_t* cpu, memory_t* mem);
+void cpu_386_step(cpu_state_t* cpu, memory_t* mem);
+void cpu_486_step(cpu_state_t* cpu, memory_t* mem);
 
 #endif // CPU_H

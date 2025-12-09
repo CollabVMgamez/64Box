@@ -26,10 +26,15 @@ typedef void* s64box_handle_t;
 /* Lifecycle */
 
 /**
- * Create a new emulator instance with the given CPU type.
+ * Create a new emulator instance with the given CPU type and RAM size.
+ *
+ * cpu_type    - which CPU core to use (8086/8088/80186/386/486).
+ * ram_size    - requested RAM size in bytes; will be clamped to a sensible
+ *               range inside the emulator (e.g. [64KB, MEMORY_SIZE]).
+ *
  * Returns NULL on failure.
  */
-s64box_handle_t s64box_create(cpu_type_t cpu_type);
+s64box_handle_t s64box_create(cpu_type_t cpu_type, uint32_t ram_size);
 
 /**
  * Destroy a previously created emulator instance.

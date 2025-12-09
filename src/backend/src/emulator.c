@@ -21,7 +21,7 @@ static void video_clear(video_state_t* video)
     memset(video->attrs, 0, sizeof(video->attrs));
 }
  
-bool emulator_init(emulator_state_t* state, cpu_type_t cpu_type)
+bool emulator_init(emulator_state_t* state, cpu_type_t cpu_type, uint32_t ram_size)
 {
     if (!state) {
         return false;
@@ -30,8 +30,32 @@ bool emulator_init(emulator_state_t* state, cpu_type_t cpu_type)
     state->cpu_type = cpu_type;
     state->running = false;
     state->cycles_per_second = 1000000; /* 1 MHz default */
+    state->ram_size = ram_size;
  
-    memory_init(&state->memory);
+    /* Bind the appropriate CPU step function based on CPU type. */
+    switch (cpu_type) {
+    case CPU_8086:
+        state->cpu_step = cpu_8086_step;
+        break;
+    case CPU_8088:
+        state->cpu_step = cpu_8088_step;
+        break;
+    case CPU_80186:
+        state->cpu_step = cpu_80186_step;
+        break;
+    case CPU_386:
+        state->cpu_step = cpu_386_step;
+        break;
+    case CPU_486:
+        state->cpu_step = cpu_486_step;
+        break;
+    default:
+        state->cpu_step = cpu_8086_step;
+        break;
+    }
+ 
+    /* Initialize memory with the requested RAM size (clamped in memory_init). */
+    memory_init(&state->memory, state->ram_size);
     cpu_init(&state->cpu);
     timer_init(&state->timer);
     keyboard_init(&state->keyboard);
@@ -56,12 +80,17 @@ void emulator_run(emulator_state_t* state, uint32_t cycles)
         return;
     }
  
+    /* Fallback in case cpu_step was not initialized for some reason. */
+    if (!state->cpu_step) {
+        state->cpu_step = cpu_8086_step;
+    }
+ 
     state->running = true;
  
     uint32_t remaining = cycles;
     while (state->running && remaining-- > 0) {
-        /* Execute one instruction */
-        cpu_step(&state->cpu, &state->memory);
+        /* Execute one instruction using the selected CPU core */
+        state->cpu_step(&state->cpu, &state->memory);
  
         /*
          * In a future version, we will account for instruction cycle
@@ -76,7 +105,8 @@ void emulator_reset(emulator_state_t* state)
         return;
     }
  
-    memory_init(&state->memory);
+    /* Reinitialize memory with the configured RAM size. */
+    memory_init(&state->memory, state->ram_size);
     cpu_reset(&state->cpu);
     timer_init(&state->timer);
     keyboard_init(&state->keyboard);
